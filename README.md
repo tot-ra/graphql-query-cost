@@ -56,7 +56,7 @@ const schema = `
 | provides       | [String] | Specify which fields are available for the child on the parent type.<br/>If only those are requested, cost will be ignored. |            |         |
 
 ## `queryCost.extractCost`
-Returns [cost directive arguments](#cost-directive-arguments) per type definition.
+Returns [cost directive arguments](#directive-arguments) per type definition.
 ```js
 const schema = `
   ${queryCost.costDirective}
@@ -77,7 +77,7 @@ costMap == {
   },
   Greeting: {
     hello: {
-      tokens: 1000 // 10 * n
+      tokens: 1000 // n * 100
     }
   }
 }
@@ -126,7 +126,7 @@ cost === (5 * 5) + 1
 ## Complexity vs tokens(network)
 - Complexity argument is multiplied by its own multipliers and every parent mutliplier
 - Tokens are only multiplied by only by parents multipliers.
-- Tokens defines how many **resources** are need to resolve a field. When it's recursive it is multiplied.
+- Tokens define how many **resources** are need to resolve a field. When it's recursive it is multiplied.
 
 
 ## Flat complexity
