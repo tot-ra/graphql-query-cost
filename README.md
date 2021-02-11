@@ -14,6 +14,7 @@ Graphql cost analysis utilities.
 - Query cost calculation based on schema and cost mappings
 
 # API
+
 In the API documentation, @pipedrive/graphql-query-cost is referred to as `queryCost`, as if it was imported with:
 
 ```js
@@ -21,7 +22,9 @@ const queryCost = require('@pipedrive/graphql-query-cost');
 ```
 
 ## `queryCost.costDirective`
+
 A custom graphql directive for defining expenses directly in the schema.
+
 ```js
 const schema = `
   ${queryCost.costDirective}
@@ -39,24 +42,24 @@ const schema = `
       provides: ["id"]
     )
   }
-`
+`;
 ```
-
 
 ### Directive arguments
 
-
-| Parameter      | Type     | Description                                                                                                                 | Complexity |  Tokens |
-| :------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------- | ---------: | ------: |
-| complexity     | Int      | Abstract value                                                                                                              |      n * 1 |         |
-| network        | Int      | Amount of requests required to resolve the field                                                                            |            | n * 100 |
-| db             | Int      | Amount of db requests or query complexity                                                                                   |            | n * 100 |
-| mutlipliers    | [String] | Field arguments for multipling the complexity                                                                               |            |         |
-| useMultipliers | Boolean  | When defined, field complexity will not be multiplied.<br/>Defaults to **true** unless the directive is **not** defined.    |            |         |
-| provides       | [String] | Specify which fields are available for the child on the parent type.<br/>If only those are requested, cost will be ignored. |            |         |
+| Parameter      | Type     | Description                                                                                                                 | Complexity |   Tokens |
+| :------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------- | ---------: | -------: |
+| complexity     | Int      | Abstract value                                                                                                              |     n \* 1 |          |
+| network        | Int      | Amount of requests required to resolve the field                                                                            |            | n \* 100 |
+| db             | Int      | Amount of db requests or query complexity                                                                                   |            | n \* 100 |
+| mutlipliers    | [String] | Field arguments for multipling the complexity                                                                               |            |          |
+| useMultipliers | Boolean  | When defined, field complexity will not be multiplied.<br/>Defaults to **true** unless the directive is **not** defined.    |            |          |
+| provides       | [String] | Specify which fields are available for the child on the parent type.<br/>If only those are requested, cost will be ignored. |            |          |
 
 ## `queryCost.extractCost`
+
 Returns [cost directive arguments](#directive-arguments) per type definition.
+
 ```js
 const schema = `
   ${queryCost.costDirective}
@@ -67,25 +70,26 @@ const schema = `
   type Query {
     hello: Greeting @cost(complexity: 10)
   }
-`
-const { costMap } = queryCost.extractCost(schema)
-costMap == {
-  Query: {
-    hello: {
-      complexity: 10
-    }
-  },
-  Greeting: {
-    hello: {
-      tokens: 1000 // n * 100
-    }
-  }
-}
+`;
+const { costMap } = queryCost.extractCost(schema);
+// {
+//   Query: {
+//     hello: {
+//       complexity: 10,
+//     },
+//   },
+//   Greeting: {
+//     hello: {
+//       tokens: 1000, // n * 100
+//     },
+//   },
+// };
 ```
 
-
 ## `queryCost.calculateCost`
+
 Calculates cost of the current query based on cost mappings and schema.
+
 ```js
 const schema = `
   type Query {
@@ -116,7 +120,7 @@ const cost = queryCost.calculateCost(
     }
   }
 )
-cost === (5 * 5) + 1
+// (5 * 5) + 1 = 11
 ```
 
 # Cost calculation
@@ -124,6 +128,7 @@ cost === (5 * 5) + 1
 - Definition of cost for entity/resolver/property should be pessimistic (considered for worst case scenario, cold cache)
 
 ## Complexity vs tokens(db, network)
+
 - Complexity argument is multiplied by its own multipliers and every parent mutliplier.
   ```
   deals(limit: 100) @cost(complexity: 2) = 200
@@ -144,8 +149,8 @@ cost === (5 * 5) + 1
   complexity(200) + tokens(200) * limit(100) = 20200
   ```
 
-
 ## Flat complexity
+
 ```graphql
 # Schema
 type Query {
@@ -159,21 +164,22 @@ query {
   default
 }
 ```
+
 Total cost is 4:
-- __field__ cost is 3
-- __default__ cost is 1
+
+- **field** cost is 3
+- **default** cost is 1
 
 ## Multipliers
+
 - Multipliers are recursive
 - Undefined(`Parent.name`) complexity is not multiplied
 
 ```graphql
 # Schema
 type Query {
-  parents(limit: Int!, names: [String]): [Parent] @cost(
-    complexity: 3,
-    multipliers: ["limit", "names"]
-  )
+  parents(limit: Int!, names: [String]): [Parent]
+  @cost(complexity: 3, multipliers: ["limit", "names"])
 }
 
 type Parent {
@@ -181,42 +187,42 @@ type Parent {
   children(limit: Int): [Child] @cost(complexity: 5)
 }
 
-type Child { name: String }
+type Child {
+  name: String
+}
 
 # Query
 {
   parents(limit: 2, names: ["elon", "foo"]) {
     name
-    children(limit: 4) { name }
+    children(limit: 4) {
+      name
+    }
   }
 }
 ```
 
-| Field path            | Description                                                          |                          Result |
-| :-------------------- | :------------------------------------------------------------------- | ------------------------------: |
-| parents               | limit * names.length * complexity                                    |                  2 * 2 * 3 = 12 |
-| parents.name          | default                                                              |               previous + 1 = 13 |
-| parents.children      | (parents.limit * parents.names.length) * children.limit * complexity | previous + (2 * 2 * 4 * 5) = 93 |
-| parents.children.name | default                                                              |               previous + 1 = 94 |
+| Field path            | Description                                                           |                           Result |
+| :-------------------- | :-------------------------------------------------------------------- | -------------------------------: |
+| parents               | limit _ names.length _ complexity                                     |                   2 _ 2 _ 3 = 12 |
+| parents.name          | default                                                               |                previous + 1 = 13 |
+| parents.children      | (parents.limit _ parents.names.length) _ children.limit \* complexity | previous + (2 _ 2 _ 4 \* 5) = 93 |
+| parents.children.name | default                                                               |                previous + 1 = 94 |
 
 ## Ignoring multipliers
 
 ### `useMultipliers`
+
 - Definining `useMultipliers: false` ignores the multipliers
+
 ```graphql
 # Schema
 type Query {
-  parents(limit: Int): [Parent] @cost(
-    complexity: 2,
-    multipliers: ["limit"]
-  )
+  parents(limit: Int): [Parent] @cost(complexity: 2, multipliers: ["limit"])
 }
 
 type Parent {
-  name: String @cost(
-    complexity: 8,
-    useMultipliers: false
-  )
+  name: String @cost(complexity: 8, useMultipliers: false)
 }
 # Query
 {
@@ -228,20 +234,17 @@ type Parent {
 
 | Field path   | Description                      |                Result |
 | :----------- | :------------------------------- | --------------------: |
-| parents      | limit * complexity               | c(2) * limit(5)  = 10 |
+| parents      | limit \* complexity              | c(2) \* limit(5) = 10 |
 | parents.name | useMultipliers: false is defined |  previous + c(8) = 18 |
 
-
 ### `provides`
+
 - If all the queried fields are in the list of `provides` argument, then the complexity of the field is ignored and the default cost is applied
+
 ```graphql
 # Schema
 type Query {
-  parents(limit: Int): [Parent] @cost(
-    complexity: 3,
-    multipliers: ["limit"]
-    provides: ["id"]
-  )
+  parents(limit: Int): [Parent] @cost(complexity: 3, multipliers: ["limit"], provides: ["id"])
 }
 
 type Parent {
@@ -259,7 +262,7 @@ type Parent {
 
 | Field path | Description                                                                                    |                Result |
 | :--------- | :--------------------------------------------------------------------------------------------- | --------------------: |
-| parents    | limit * complexity                                                                             | c(3) * limit(5)  = 15 |
+| parents    | limit \* complexity                                                                            | c(3) \* limit(5) = 15 |
 | parents.id | no multipliers used, default cost applied - field `parents` already `provides` fields `["id"]` |  previous + c(1) = 16 |
 
 ### Recursive queries
@@ -296,11 +299,11 @@ type Deal {
 }
 ```
 
-| Field path | Description                                                                            |                                                               Result |
-| :--------- | :------------------------------------------------------------------------------------- | -------------------------------------------------------------------: |
-| pipelines  | Default cost                                                                           |                                                                    1 |
-| deals      | Default cost                                                                           |                                                   previous +  1  = 2 |
-| pipeline   | Default cost                                                                           |                                                   previous +  1  = 3 |
-| deals      | `deals.pipeline` reverse of `pipeline.deals` already appeared <br /> Recursion level 1 |                               previous * 100(recursion x1) + 1 = 301 |
-| pipeline   | Recursion level increased to 2                                                         | previous * (100 * 100)(recursion x2) + 1 = 301 * 10000 + 1 = 3010001 |
-| id         | Default cost                                                                           |                                            (previous +  1) = 3010002 |
+| Field path | Description                                                                            |                                                                Result |
+| :--------- | :------------------------------------------------------------------------------------- | --------------------------------------------------------------------: |
+| pipelines  | Default cost                                                                           |                                                                     1 |
+| deals      | Default cost                                                                           |                                                      previous + 1 = 2 |
+| pipeline   | Default cost                                                                           |                                                      previous + 1 = 3 |
+| deals      | `deals.pipeline` reverse of `pipeline.deals` already appeared <br /> Recursion level 1 |                               previous \* 100(recursion x1) + 1 = 301 |
+| pipeline   | Recursion level increased to 2                                                         | previous _ (100 _ 100)(recursion x2) + 1 = 301 \* 10000 + 1 = 3010001 |
+| id         | Default cost                                                                           |                                              (previous + 1) = 3010002 |
