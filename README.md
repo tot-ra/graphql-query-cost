@@ -1,6 +1,6 @@
 # graphql-query-cost
 
-Graphql cost anlysis utilities.
+Graphql cost analysis utilities.
 
 ![](https://img.shields.io/travis/pipedrive/graphql-query-cost/master?logo=travis)
 ![](https://img.shields.io/github/v/release/pipedrive/graphql-query-cost?sort=semver)
@@ -123,10 +123,26 @@ cost === (5 * 5) + 1
 
 - Definition of cost for entity/resolver/property should be pessimistic (considered for worst case scenario, cold cache)
 
-## Complexity vs tokens(network)
-- Complexity argument is multiplied by its own multipliers and every parent mutliplier
-- Tokens are only multiplied by only by parents multipliers.
+## Complexity vs tokens(db, network)
+- Complexity argument is multiplied by its own multipliers and every parent mutliplier.
+  ```
+  deals(limit: 100) @cost(complexity: 2) = 200
+  ```
 - Tokens define how many **resources** are need to resolve a field. When it's recursive it is multiplied.
+- Tokens are only multiplied only by its parents multipliers. Only parent multipliers are used because it takes "parent" times **resources** to execute the query. <br>
+  **Example query**
+  ```
+  deals(limit: 100)
+    @cost(complexity: 2, db: 1, network: 1)
+  ```
+  **Example token cost**
+  ```
+  complexity(2) * limit(100) + tokens(200) = 400
+  ```
+  **If tokens were multiplied by own multipler**
+  ```
+  complexity(200) + tokens(200) * limit(100) = 20200
+  ```
 
 
 ## Flat complexity
