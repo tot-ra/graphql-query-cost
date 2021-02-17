@@ -307,3 +307,10 @@ type Deal {
 | deals      | `deals.pipeline` reverse of `pipeline.deals` already appeared <br /> Recursion level 1 |                               previous \* 100(recursion x1) + 1 = 301 |
 | pipeline   | Recursion level increased to 2                                                         | previous _ (100 _ 100)(recursion x2) + 1 = 301 \* 10000 + 1 = 3010001 |
 | id         | Default cost                                                                           |                                              (previous + 1) = 3010002 |
+
+
+# Contribution
+
+* Before making PR, make sure to run `npm run version` & fill CHANGELOG
+* `npm-version-<version>` – should be set when creating a pull request. It’s good to set it as soon as possible, so reviewer can validate that the proposed version bump is correct
+* `npm-ready-for-publish` – add this label after PR has been approved, it will publish the package to NPM and merge changes to master
