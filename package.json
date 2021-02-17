@@ -1,5 +1,5 @@
 {
-  "name": "graphql-query-cost",
+  "name": "@pipedrive/graphql-query-cost",
   "version": "1.0.0",
   "description": "Graphql query cost analysis utils",
   "main": "lib/index.js",
