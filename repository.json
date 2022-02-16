@@ -1,0 +1,7 @@
+{
+  "name": "graphql-query-cost",
+  "description": "Opensource graphql query cost complexity estimation library",
+  "owner": "CORE",
+  "type": "library",
+  "status": "released"
+}
