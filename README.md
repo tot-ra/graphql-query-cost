@@ -1,4 +1,5 @@
 # graphql-query-cost
+
 Graphql cost analysis, mainly to limit query execution in graphql service before resolvers are executed.
 
 ![](https://img.shields.io/travis/pipedrive/graphql-query-cost/master?logo=travis)
@@ -307,9 +308,8 @@ type Deal {
 | pipeline   | Recursion level increased to 2                                                         | previous _ (100 _ 100)(recursion x2) + 1 = 301 \* 10000 + 1 = 3010001 |
 | id         | Default cost                                                                           |                                              (previous + 1) = 3010002 |
 
-
-
 #### Recursion multiplier
+
 `recursionMultiplier` default value is `100`. If recursion is detected, thats how much cost gets affected.
 `recursionMultiplier` value of `1` will mean that detected recursion doesn't affect cost.
 `recursionMultiplier` value gets inherited to deeper levels of the graph, so you can have different values depending on the schema
@@ -321,14 +321,14 @@ you can override default behaviour by setting `recursionMultiplier` to lower val
 
 With maximum cost of `5000` per request, you can see different values of `recursionMultiplier` affects graphq and schema below:
 
-| recursionMultiplier    | Cost          |
-|:-----------------------|:--------------|
-| 1                      | 6             |
-| 3                      | 1490          |
-| 3.65                   | 4783          |
-| 100 (default)          | 2000001000102 |
+| recursionMultiplier | Cost          |
+| :------------------ | :------------ |
+| 1                   | 6             |
+| 3                   | 1490          |
+| 3.65                | 4783          |
+| 100 (default)       | 2000001000102 |
 
-- It is recommended that you *don't* set recursion to `1`, but still leave some recursion scaling limits, such that your query still fits into max cost limit.
+- It is recommended that you _don't_ set recursion to `1`, but still leave some recursion scaling limits, such that your query still fits into max cost limit.
 
 ```graphql
 # Schema
@@ -357,10 +357,9 @@ type TreeLeaf {
 }
 ```
 
-
 - With great `recursionMultiplier` override power comes great responsibility that you don't reset it to `1` and leave holes in graph cost map.
-```graphql
 
+```graphql
 type Query {
   myTree: [TreeLeaf]
 }
@@ -373,23 +372,26 @@ type TreeLeaf {
   leafs: [TreeLeaf] @cost(recursionMultiplier: 1)
 }
 
-type Branch{
+type Branch {
   id: ID
   name: String @cost(network: 1)
   leafs: [TreeLeaf]
 }
 ```
 
-
 ## Development
 
 ### Cost debugging
+
 To ease understanding how cost is calculated, you can use `debug:true` param, which will console.log node visiting along with how price is added.
 (Maybe it could be a product feature later if further )
+
 ```
 	calculateCost(`query { a { b { c { b {c { id }}}}}}`, typeDefs, { costMap, debug: true });
 ```
+
 Debug result:
+
 ```
        undefined (<OperationDefinition>)
         a <Field>
@@ -427,6 +429,7 @@ Debug result:
 - `npm-ready-for-publish` – add this label after PR has been approved, it will publish the package to NPM and merge changes to master
 
 ## Authors and acknowledgment
+
 Original author - @ErikSchults.
 Current maintainers - @tot-ra, @Wolg. Mention in PR, if it is stuck
 
