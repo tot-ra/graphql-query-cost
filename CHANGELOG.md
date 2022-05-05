@@ -25,3 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.0]: https://github.com/pipedrive/graphql-query-cost/compare/v1.0.0...v1.0.0
 [unreleased]: https://github.com/pipedrive/graphql-query-cost/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/pipedrive/graphql-query-cost/tree/v1.0.1
+
+
+[Unreleased]: https://github.com/pipedrive/graphql-query-cost/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/pipedrive/graphql-query-cost/tree/v2.0.0
