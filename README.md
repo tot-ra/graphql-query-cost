@@ -1,4 +1,4 @@
-# graphql-query-cost
+# @pipedrive/graphql-query-cost
 
 Graphql cost analysis, mainly to limit query execution in graphql service before resolvers are executed.
 
