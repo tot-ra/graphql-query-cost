@@ -1,6 +1,6 @@
 # graphql-query-cost
 
-Graphql cost analysis utilities.
+Graphql cost analysis, mainly to limit query execution in graphql service before resolvers are executed.
 
 ![](https://img.shields.io/travis/pipedrive/graphql-query-cost/master?logo=travis)
 ![](https://img.shields.io/github/v/release/pipedrive/graphql-query-cost?sort=semver)
@@ -8,10 +8,10 @@ Graphql cost analysis utilities.
 
 # Features
 
+- Query cost calculation based on schema and cost mappings
 - Cost directive for the schema
 - Cost directive extraction from the schema
 - Cost directive value extraction from the schema as cost mappings
-- Query cost calculation based on schema and cost mappings
 
 # API
 
@@ -308,9 +308,129 @@ type Deal {
 | pipeline   | Recursion level increased to 2                                                         | previous _ (100 _ 100)(recursion x2) + 1 = 301 \* 10000 + 1 = 3010001 |
 | id         | Default cost                                                                           |                                              (previous + 1) = 3010002 |
 
+#### Recursion multiplier
+
+`recursionMultiplier` default value is `100`. If recursion is detected, thats how much cost gets affected.
+`recursionMultiplier` value of `1` will mean that detected recursion doesn't affect cost.
+`recursionMultiplier` value gets inherited to deeper levels of the graph, so you can have different values depending on the schema
+
+For cases where schema and resolver can have deeply nested recursive structures (trees or graphs) fetched once into memory,
+you can override default behaviour by setting `recursionMultiplier` to lower values.
+
+##### Usage
+
+With maximum cost of `5000` per request, you can see different values of `recursionMultiplier` affects graphq and schema below:
+
+| recursionMultiplier | Cost          |
+| :------------------ | :------------ |
+| 1                   | 6             |
+| 3                   | 1490          |
+| 3.65                | 4783          |
+| 100 (default)       | 2000001000102 |
+
+- It is recommended that you _don't_ set recursion to `1`, but still leave some recursion scaling limits, such that your query still fits into max cost limit.
+
+```graphql
+# Schema
+type Query {
+  myTree: [TreeLeaf]
+}
+
+type TreeLeaf {
+  id: ID
+  leafs: [TreeLeaf] @cost(recursionMultiplier: 1)
+}
+
+# Query
+{
+  myTree {
+    leafs {
+      leafs {
+        leafs {
+          leafs {
+            id
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+- With great `recursionMultiplier` override power comes great responsibility that you don't reset it to `1` and leave holes in graph cost map.
+
+```graphql
+type Query {
+  myTree: [TreeLeaf]
+}
+
+type TreeLeaf {
+  id: ID
+
+  # reset recursionMultiplier back to 100, as its part of the recursive graph
+  branch: Branch @cost(recursionMultiplier: 100)
+  leafs: [TreeLeaf] @cost(recursionMultiplier: 1)
+}
+
+type Branch {
+  id: ID
+  name: String @cost(network: 1)
+  leafs: [TreeLeaf]
+}
+```
+
+## Development
+
+### Cost debugging
+
+To ease understanding how cost is calculated, you can use `debug:true` param, which will console.log node visiting along with how price is added.
+(Maybe it could be a product feature later if further )
+
+```
+	calculateCost(`query { a { b { c { b {c { id }}}}}}`, typeDefs, { costMap, debug: true });
+```
+
+Debug result:
+
+```
+       undefined (<OperationDefinition>)
+        a <Field>
+         a (<Field>)
+          b <Field>
+           b (<Field>)
+            c <Field>
+             c (<Field>)
+              b <Field>
+               b (<Field>)
+                c <Field>
+                recursion detected b=>c for 1 times
+                recursion detected c=>bfor 1 times
+                * recursion multiplier = (10000)
+                 c (<Field>)
+                  id <Field>
+                  = 1
+                 == 1
+                = 20000
+               == 20000
+              = 20001
+             == 20001
+            = 20002
+           == 20002
+          = 20003
+         == 20003
+        = 20004
+       == 20004
+```
 
 # Contribution
 
-* Before making PR, make sure to run `npm run version` & fill CHANGELOG
-* `npm-version-<version>` – should be set when creating a pull request. It’s good to set it as soon as possible, so reviewer can validate that the proposed version bump is correct
-* `npm-ready-for-publish` – add this label after PR has been approved, it will publish the package to NPM and merge changes to master
+- Before making PR, make sure to run `npm run version` & fill CHANGELOG
+- `npm-version-<version>` – should be set when creating a pull request. It’s good to set it as soon as possible, so reviewer can validate that the proposed version bump is correct
+- `npm-ready-for-publish` – add this label after PR has been approved, it will publish the package to NPM and merge changes to master
+
+## Authors and acknowledgment
+
+Original author - @ErikSchults.
+Current maintainers - @tot-ra, @Wolg. Mention in PR, if it is stuck
+
+See [blog post](https://medium.com/pipedrive-engineering/journey-to-a-federated-graphql-cost-of-the-queries-a892f9939f9a)

@@ -1,3 +1,3 @@
 DEFAULT_NODE_VERSION = '14'
-NODE_VERSIONS = ['8', '14']
+NODE_VERSIONS = ['12', '14', '16']
 return this
