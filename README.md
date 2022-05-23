@@ -1,10 +1,11 @@
-# graphql-query-cost
+# @pipedrive/graphql-query-cost
 
 Graphql cost analysis, mainly to limit query execution in graphql service before resolvers are executed.
 
 ![](https://img.shields.io/travis/pipedrive/graphql-query-cost/master?logo=travis)
 ![](https://img.shields.io/github/v/release/pipedrive/graphql-query-cost?sort=semver)
 ![](https://img.shields.io/coveralls/github/pipedrive/graphql-query-cost/master?logo=coveralls)
+[![Known Vulnerabilities](https://snyk.io/test/npm/@pipedrive/graphql-query-cost/badge.svg)](https://snyk.io/test/npm/@pipedrive/graphql-query-cost)
 
 # Features
 
