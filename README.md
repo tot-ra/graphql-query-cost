@@ -53,7 +53,7 @@ const schema = `
 | complexity     | Int      | Abstract value                                                                                                              |     n \* 1 |          |
 | network        | Int      | Amount of requests required to resolve the field                                                                            |            | n \* 100 |
 | db             | Int      | Amount of db requests or query complexity                                                                                   |            | n \* 100 |
-| mutlipliers    | [String] | Field arguments for multipling the complexity                                                                               |            |          |
+| mutlipliers    | [String] | Field arguments for multipling the complexity. If a number is provided the complexity will be multiplied by the number.     |            |          |
 | useMultipliers | Boolean  | When defined, field complexity will not be multiplied.<br/>Defaults to **true** unless the directive is **not** defined.    |            |          |
 | provides       | [String] | Specify which fields are available for the child on the parent type.<br/>If only those are requested, cost will be ignored. |            |          |
 
@@ -180,7 +180,7 @@ Total cost is 4:
 # Schema
 type Query {
   parents(limit: Int!, names: [String]): [Parent]
-  @cost(complexity: 3, multipliers: ["limit", "names"])
+    @cost(complexity: 3, multipliers: ["limit", "names"])
 }
 
 type Parent {
