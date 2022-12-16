@@ -33,7 +33,7 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
-    "graphql": "15.5.0",
+    "graphql": "15.8.0",
     "lodash": "4.17.21"
   },
   "devDependencies": {
